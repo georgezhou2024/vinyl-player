@@ -21,21 +21,23 @@ class VinylEngine {
     this.lp.connect(this.gain); this.gain.connect(this.master);
     this.master.connect(this.ctx.destination);
 
-    // —— 唱片表面杂音 ——
+    // —— 唱片表面杂音（loop 一次启动，用 gain 控制开关） ——
+    this.crackleGain = this.ctx.createGain(); this.crackleGain.gain.value = 0;
+    const bp = this.ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2500; bp.Q = 0.7;
     this.crackleSrc = this.ctx.createBufferSource();
     this.crackleSrc.buffer = this.makeCrackle(this.ctx, 4);
     this.crackleSrc.loop = true;
-    this.crackleGain = this.ctx.createGain(); this.crackleGain.gain.value = 0.10;
-    const bp = this.ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2500; bp.Q = 0.7;
     this.crackleSrc.connect(bp); bp.connect(this.crackleGain); this.crackleGain.connect(this.master);
+    this.crackleSrc.start();
 
-    // —— 低频底鼓 rumble ——
+    // —— 低频 rumble（同上） ——
+    this.rumbleGain = this.ctx.createGain(); this.rumbleGain.gain.value = 0;
+    const lp2 = this.ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 90;
     this.rumbleSrc = this.ctx.createBufferSource();
     this.rumbleSrc.buffer = this.makeBrown(this.ctx, 4);
     this.rumbleSrc.loop = true;
-    this.rumbleGain = this.ctx.createGain(); this.rumbleGain.gain.value = 0.05;
-    const lp2 = this.ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 90;
     this.rumbleSrc.connect(lp2); lp2.connect(this.rumbleGain); this.rumbleGain.connect(this.master);
+    this.rumbleSrc.start();
 
     this.analyser = this.ctx.createAnalyser(); this.analyser.fftSize = 512;
     this.master.connect(this.analyser);
@@ -43,7 +45,6 @@ class VinylEngine {
     this.ready = true;
   }
 
-  /* --- 噪声生成 --- */
   makeBrown(ctx, sec) {
     const b = ctx.createBuffer(1, ctx.sampleRate * sec, ctx.sampleRate);
     const d = b.getChannelData(0); let v = 0;
@@ -58,7 +59,7 @@ class VinylEngine {
     const d = b.getChannelData(0);
     for (let i = 0; i < d.length; i++) {
       let s = (Math.random() * 2 - 1) * 0.25;
-      if (Math.random() < 0.00035) {                       // 随机爆点
+      if (Math.random() < 0.00035) {
         const decay = 0.004;
         for (let k = 0; k < 300 && i + k < d.length; k++)
           d[i + k] += (Math.random() * 2 - 1) * Math.exp(-k * decay) * 0.9;
@@ -77,21 +78,38 @@ class VinylEngine {
     return b;
   }
 
-  /* --- 操作 --- */
   async play(track) {
     if (!this.ready) this.init();
     if (this.ctx.state === 'suspended') await this.ctx.resume();
     this.track = track;
     this.el.src = URL.createObjectURL(track.blob);
     this.el.playbackRate = this.rpm / 33.333;
-    this.el.play();
-    this.crackleSrc.start(); this.rumbleSrc.start();
+    await this.el.play();
+    this.crackleGain.gain.value = (document.getElementById('crackle')?.value || 35) / 100 * 0.3;
+    this.rumbleGain.gain.value = 0.05;
     this.needleDrop();
+  }
+
+  pause() {
+    this.el.pause();
+    this.crackleGain.gain.value = 0;
+    this.rumbleGain.gain.value = 0;
+    this.click();
+  }
+
+  async resume() {
+    if (this.ctx.state === 'suspended') await this.ctx.resume();
+    await this.el.play();
+    this.crackleGain.gain.value = (document.getElementById('crackle')?.value || 35) / 100 * 0.3;
+    this.rumbleGain.gain.value = 0.05;
   }
 
   stop() {
     this.el.pause();
-    try { this.crackleSrc.stop(); this.rumbleSrc.stop(); } catch (e) {}
+    this.el.removeAttribute('src');
+    this.el.load();
+    this.crackleGain.gain.value = 0;
+    this.rumbleGain.gain.value = 0;
     this.click();
   }
 
@@ -110,11 +128,10 @@ class VinylEngine {
     this.rpm = rpm;
     if (!this.el.paused) this.el.playbackRate = rpm / 33.333;
   }
-  setVolume(v)   { this.gain.gain.value = v / 100; }
-  setCrackle(v)  { if (this.ready) this.crackleGain.gain.value = (v / 100) * 0.3; }
+  setVolume(v)   { if (this.ready) this.gain.gain.value = v / 100; }
+  setCrackle(v)  { if (this.ready && !this.el.paused) this.crackleGain.gain.value = (v / 100) * 0.3; }
   setWarm(f)     { if (this.ready) this.lp.frequency.value = f; }
 
-  /* 抖颤 wow & flutter：微小随机速率抖动 */
   startWow(amount) {
     if (this.wowTimer) clearInterval(this.wowTimer);
     this.wowTimer = setInterval(() => {
