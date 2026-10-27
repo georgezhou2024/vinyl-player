@@ -1,0 +1,9 @@
+{
+  "name": "Vinyl Studio",
+  "short_name": "Vinyl",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0b0f14",
+  "theme_color": "#ff7a45",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

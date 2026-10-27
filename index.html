@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vinyl · 真实唱片机</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="bar">
+    <div class="brand"><span class="dot"></span>VINYL<span class="sub">STUDIO</span></div>
+    <div class="bar-right">
+      <button class="ghost" id="importBtn">＋ 导入音乐</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ 唱片机 ============ -->
+    <section class="deck">
+      <div class="machine">
+        <div class="deck-top">
+          <svg class="surface" viewBox="0 0 620 470" id="surface">
+            <defs>
+              <radialGradient id="platterG" cx="40%" cy="35%">
+                <stop offset="0" stop-color="#d9dde2"/><stop offset=".6" stop-color="#8b939c"/>
+                <stop offset="1" stop-color="#4c5359"/>
+              </radialGradient>
+              <radialGradient id="vinylG" cx="38%" cy="30%">
+                <stop offset="0" stop-color="#2a2f36"/><stop offset=".45" stop-color="#12151a"/>
+                <stop offset="1" stop-color="#05070a"/>
+              </radialGradient>
+              <linearGradient id="armG" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#c8d1d8"/><stop offset="1" stop-color="#7d8791"/>
+              </linearGradient>
+            </defs>
+
+            <!-- 转盘 -->
+            <circle class="platter" cx="250" cy="235" r="222" fill="url(#platterG)"/>
+            <circle class="platter-ring" cx="250" cy="235" r="222"/>
+
+            <g transform="translate(250,235)">
+              <g id="disc">
+                <circle r="205" fill="url(#vinylG)"/>
+                <g id="grooves"></g>
+                <circle r="62" class="label"/>
+                <text id="labelTitle" class="label-text" x="0" y="-14">—</text>
+                <text id="labelSide" class="label-side" x="0" y="22">33⅓ RPM</text>
+                <g id="labelArc"></g>
+              </g>
+            </g>
+
+            <circle class="sheen" cx="250" cy="235" r="205"/>
+            <circle class="spindle" cx="250" cy="235" r="7"/>
+
+            <!-- 唱臂 -->
+            <g id="arm">
+              <line id="armLine" x1="560" y1="48" x2="470" y2="300" stroke="url(#armG)" stroke-width="5" stroke-linecap="round"/>
+              <g id="armHead"></g>
+              <circle class="pivot" cx="560" cy="48" r="11"/>
+              <circle class="pivot-h" cx="560" cy="48" r="4"/>
+              <line id="armWeight" x1="560" y1="48" x2="600" y2="10" stroke="#3b434c" stroke-width="9" stroke-linecap="round"/>
+            </g>
+            <circle class="post" cx="585" cy="180" r="6"/>
+          </svg>
+
+          <div class="led" id="led"><i></i></div>
+        </div>
+
+        <div class="deck-front">
+          <div class="plate">
+            <div class="controls">
+              <button id="playBtn" class="play">▶ 落针播放</button>
+              <div class="rpm">
+                <span class="rpm-l">转速</span>
+                <button data-rpm="16">16</button>
+                <button data-rpm="33" class="on">33⅓</button>
+                <button data-rpm="45">45</button>
+                <button data-rpm="78">78</button>
+              </div>
+            </div>
+            <div class="knobs">
+              <label class="knob"><span>音量</span><input type="range" id="vol" min="0" max="100" value="80"><i></i></label>
+              <label class="knob"><span>杂音</span><input type="range" id="crackle" min="0" max="100" value="35"><i></i></label>
+              <label class="knob"><span>抖颤</span><input type="range" id="wow" min="0" max="100" value="20"><i></i></label>
+              <label class="knob"><span> warmth</span><input type="range" id="warm" min="2000" max="9000" value="6000"><i></i></label>
+            </div>
+            <div class="meter"><canvas id="scope" width="260" height="46"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 唱片架 ============ -->
+    <aside class="library">
+      <div class="drop" id="drop">
+        <b>拖拽音乐文件到这里</b>
+        <small>MP3 / WAV / OGG / FLAC · 本地导入，不上传服务器</small>
+      </div>
+      <div class="rack" id="rack"></div>
+    </aside>
+  </main>
+</div>
+
+<input type="file" id="fileInput" accept="audio/*" multiple hidden>
+<audio id="player" preload="none"></audio>
+
+<script src="js/records.js"></script>
+<script src="js/vinyl.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
