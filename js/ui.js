@@ -3,13 +3,13 @@ let current = null;
 
 const grooves = document.getElementById('grooves');
 let g = '';
-for (let r = 64; r <= 200; r += 3.1)
-  g += `<circle r="${r}" fill="none" stroke="rgba(255,255,255,.055)" stroke-width=".7"/>`;
+for (let r = 70; r <= 225; r += 2.5)
+  g += `<circle r="${r}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width=".6"/>`;
 grooves.innerHTML = g;
 
-const P = { x: 560, y: 48 };
-const ARM_LEN = 310;
-const A_REST = 100, A_OUT = 115, A_IN = 143;
+const P = { x: 640, y: 160 };
+const ARM_LEN = 350;
+const A_REST = 15, A_OUT = 155, A_IN = 138;
 
 function armAt(angleDeg) {
   const a = angleDeg * Math.PI / 180;
@@ -18,8 +18,8 @@ function armAt(angleDeg) {
   document.getElementById('armLine').setAttribute('x2', tx);
   document.getElementById('armLine').setAttribute('y2', ty);
   document.getElementById('armHead').innerHTML =
-    `<rect x="${tx - 12}" y="${ty - 8}" width="24" height="16" rx="4" transform="rotate(${angleDeg} ${tx} ${ty})" fill="#20262e"/>
-     <circle cx="${tx}" cy="${ty}" r="3" fill="#d7dbe0"/>`;
+    `<rect x="${tx - 10}" y="${ty - 6}" width="20" height="12" rx="2" transform="rotate(${angleDeg + 90} ${tx} ${ty})" fill="#1a1a1a" stroke="#c8a030" stroke-width="1"/>
+     <circle cx="${tx}" cy="${ty}" r="2.5" fill="#c8c8c8"/>`;
   document.getElementById('armWeight').setAttribute('x2', P.x + 40 * Math.cos(a + Math.PI));
   document.getElementById('armWeight').setAttribute('y2', P.y + 40 * Math.sin(a + Math.PI));
 }
@@ -76,8 +76,8 @@ async function loadAndPlay(track) {
     vinyl.ensureContext();
     if (vinyl.track) vinyl.stop();
     current = track;
-    document.getElementById('labelTitle').textContent = track.name.slice(0, 18);
-    document.getElementById('labelSide').textContent = `${vinyl.rpm} RPM`;
+    document.getElementById('labelTitle').textContent = track.name.slice(0, 16);
+    document.getElementById('labelSide').textContent = `${vinyl.rpm}`;
     await vinyl.play(track);
     setSpin(true);
     document.getElementById('playBtn').textContent = '⏸ 暂停';
@@ -109,7 +109,6 @@ document.getElementById('playBtn').addEventListener('click', async () => {
   }
 });
 
-/* ============ 唱臂拖拽 ============ */
 const svg = document.getElementById('surface');
 let armDragging = false;
 
@@ -141,7 +140,7 @@ svg.addEventListener('mousedown', (e) => {
 document.addEventListener('mousemove', (e) => {
   if (!armDragging) return;
   let angle = angleFromPointer(e.clientX, e.clientY);
-  angle = Math.max(85, Math.min(150, angle));
+  angle = Math.max(0, Math.min(175, angle));
   armAt(angle);
 });
 
@@ -151,11 +150,11 @@ document.addEventListener('mouseup', (e) => {
   let angle = angleFromPointer(e.clientX, e.clientY);
   const p = document.getElementById('player');
 
-  if (angle >= A_OUT - 3 && angle <= A_IN + 3) {
-    angle = Math.max(A_OUT, Math.min(A_IN, angle));
+  if (angle >= A_OUT - 5 && angle <= A_IN + 5) {
+    angle = Math.max(A_IN, Math.min(A_OUT, angle));
     armAt(angle);
     if (current && p.duration) {
-      const progress = (angle - A_OUT) / (A_IN - A_OUT);
+      const progress = (A_OUT - angle) / (A_OUT - A_IN);
       p.currentTime = progress * p.duration;
       if (p.paused) {
         vinyl.resume();
@@ -169,14 +168,13 @@ document.addEventListener('mouseup', (e) => {
   }
 });
 
-/* ============ 唱臂随进度自动移动 ============ */
 document.getElementById('player').addEventListener('timeupdate', () => {
   if (armDragging) return;
   const p = document.getElementById('player');
   const dur = p.duration || 0;
   if (!dur || p.paused) return;
   const prog = p.currentTime / dur;
-  armAt(A_OUT + (A_IN - A_OUT) * prog);
+  armAt(A_OUT - (A_OUT - A_IN) * prog);
   document.getElementById('labelSide').textContent =
     `${Math.floor(p.currentTime)}s / ${Math.floor(dur)}s`;
 });
