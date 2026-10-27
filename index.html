@@ -6,7 +6,7 @@
 <title>Vinyl · 真实唱片机</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
 <div class="app">
@@ -19,7 +19,6 @@
   </header>
 
   <main>
-    <!-- ============ 唱片机 ============ -->
     <section class="deck">
       <div class="machine">
         <div class="deck-top">
@@ -38,7 +37,6 @@
               </linearGradient>
             </defs>
 
-            <!-- 转盘 -->
             <circle class="platter" cx="250" cy="235" r="222" fill="url(#platterG)"/>
             <circle class="platter-ring" cx="250" cy="235" r="222"/>
 
@@ -49,14 +47,12 @@
                 <circle r="62" class="label"/>
                 <text id="labelTitle" class="label-text" x="0" y="-14">—</text>
                 <text id="labelSide" class="label-side" x="0" y="22">33⅓ RPM</text>
-                <g id="labelArc"></g>
               </g>
             </g>
 
             <circle class="sheen" cx="250" cy="235" r="205"/>
             <circle class="spindle" cx="250" cy="235" r="7"/>
 
-            <!-- 唱臂 -->
             <g id="arm">
               <line id="armLine" x1="560" y1="48" x2="470" y2="300" stroke="url(#armG)" stroke-width="5" stroke-linecap="round"/>
               <g id="armHead"></g>
@@ -86,7 +82,7 @@
               <label class="knob"><span>音量</span><input type="range" id="vol" min="0" max="100" value="80"><i></i></label>
               <label class="knob"><span>杂音</span><input type="range" id="crackle" min="0" max="100" value="35"><i></i></label>
               <label class="knob"><span>抖颤</span><input type="range" id="wow" min="0" max="100" value="20"><i></i></label>
-              <label class="knob"><span> warmth</span><input type="range" id="warm" min="2000" max="9000" value="6000"><i></i></label>
+              <label class="knob"><span>warmth</span><input type="range" id="warm" min="2000" max="9000" value="6000"><i></i></label>
             </div>
             <div class="meter"><canvas id="scope" width="260" height="46"></canvas></div>
           </div>
@@ -94,7 +90,6 @@
       </div>
     </section>
 
-    <!-- ============ 唱片架 ============ -->
     <aside class="library">
       <div class="drop" id="drop">
         <b>拖拽音乐文件到这里</b>
@@ -105,11 +100,11 @@
   </main>
 </div>
 
-<input type="file" id="fileInput" accept="audio/*" multiple hidden>
-<audio id="player" preload="none"></audio>
+<input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a" multiple hidden>
+<audio id="player" preload="auto"></audio>
 
-<script src="js/records.js"></script>
-<script src="js/vinyl.js"></script>
-<script src="js/ui.js"></script>
+<script src="js/records.js?v=3"></script>
+<script src="js/vinyl.js?v=3"></script>
+<script src="js/ui.js?v=3"></script>
 </body>
 </html>

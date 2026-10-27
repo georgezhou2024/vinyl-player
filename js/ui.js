@@ -42,10 +42,11 @@ async function renderRack() {
         <button class="play">播放</button>
         <button class="del">✕</button>
       </div>
-    </div>`).join('') || '<div class="drop">唱片架空空如也 —— 导入音乐开始</div>';
+    </div>`).join('') || '<div class="drop">唱片架空空如也 —— 点上方「导入音乐」或拖拽文件到这里</div>';
 }
 
 rack.addEventListener('click', async e => {
+  vinyl.ensureContext();
   const card = e.target.closest('.card'); if (!card) return;
   const id = card.dataset.id;
   if (e.target.classList.contains('del')) {
@@ -72,6 +73,7 @@ function setSpin(on) {
 
 async function loadAndPlay(track) {
   try {
+    vinyl.ensureContext();
     if (vinyl.track) vinyl.stop();
     current = track;
     document.getElementById('labelTitle').textContent = track.name.slice(0, 18);
@@ -82,12 +84,13 @@ async function loadAndPlay(track) {
     document.getElementById('led').classList.add('on');
     renderRack();
   } catch (err) {
-    alert('播放失败: ' + err.message);
+    alert('播放失败: ' + err.message + '\n\n请确认文件是有效的音频格式（MP3/WAV/OGG/FLAC）');
     console.error(err);
   }
 }
 
 document.getElementById('playBtn').addEventListener('click', async () => {
+  vinyl.ensureContext();
   if (!current) {
     document.getElementById('fileInput').click();
     return;
@@ -124,20 +127,31 @@ document.getElementById('player').addEventListener('ended', () => {
   armAt(A_REST);
 });
 
+document.getElementById('player').addEventListener('error', (e) => {
+  console.error('audio error:', e, document.getElementById('player').error);
+});
+
 const fileInput = document.getElementById('fileInput');
 const drop = document.getElementById('drop');
+
 async function importFiles(files) {
-  for (const f of files) {
-    if (!f.type.startsWith('audio/')) continue;
+  vinyl.ensureContext();
+  const audioFiles = Array.from(files).filter(f => f.type.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a|aac)$/i.test(f.name));
+  if (!audioFiles.length) {
+    alert('请选择音频文件（MP3 / WAV / OGG / FLAC / M4A）');
+    return;
+  }
+  for (const f of audioFiles) {
     await Library.add(f.name, f);
   }
   renderRack();
   const all = await Library.all();
   if (all.length && !current) loadAndPlay(all[all.length - 1]);
 }
-document.getElementById('importBtn').onclick = () => fileInput.click();
-fileInput.onchange = e => importFiles(e.target.files);
-drop.onclick = () => fileInput.click();
+
+document.getElementById('importBtn').onclick = (e) => { vinyl.ensureContext(); fileInput.click(); };
+fileInput.onchange = e => { importFiles(e.target.files); fileInput.value = ''; };
+drop.onclick = () => { vinyl.ensureContext(); fileInput.click(); };
 ['dragover','dragleave','drop'].forEach(ev =>
   drop.addEventListener(ev, e => {
     e.preventDefault();
@@ -151,7 +165,6 @@ document.getElementById('warm').oninput = e => vinyl.setWarm(+e.target.value);
 document.getElementById('wow').oninput = e => vinyl.startWow(+e.target.value);
 
 vinyl.setVolume(80);
-vinyl.setWarm(6000);
 vinyl.startWow(20);
 
 document.querySelectorAll('.rpm button').forEach(b => b.onclick = () => {
