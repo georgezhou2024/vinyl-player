@@ -109,7 +109,69 @@ document.getElementById('playBtn').addEventListener('click', async () => {
   }
 });
 
+/* ============ 唱臂拖拽 ============ */
+const svg = document.getElementById('surface');
+let armDragging = false;
+
+function getSvgPoint(clientX, clientY) {
+  const pt = svg.createSVGPoint();
+  pt.x = clientX;
+  pt.y = clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+function angleFromPointer(clientX, clientY) {
+  const pt = getSvgPoint(clientX, clientY);
+  const dx = pt.x - P.x;
+  const dy = pt.y - P.y;
+  return Math.atan2(dy, dx) * 180 / Math.PI;
+}
+
+document.getElementById('armLine').style.pointerEvents = 'stroke';
+document.getElementById('armLine').style.cursor = 'grab';
+
+svg.addEventListener('mousedown', (e) => {
+  const target = e.target;
+  if (target.id === 'armLine' || target.closest('#armHead') || target.id === 'pivot') {
+    armDragging = true;
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!armDragging) return;
+  let angle = angleFromPointer(e.clientX, e.clientY);
+  angle = Math.max(85, Math.min(150, angle));
+  armAt(angle);
+});
+
+document.addEventListener('mouseup', (e) => {
+  if (!armDragging) return;
+  armDragging = false;
+  let angle = angleFromPointer(e.clientX, e.clientY);
+  const p = document.getElementById('player');
+
+  if (angle >= A_OUT - 3 && angle <= A_IN + 3) {
+    angle = Math.max(A_OUT, Math.min(A_IN, angle));
+    armAt(angle);
+    if (current && p.duration) {
+      const progress = (angle - A_OUT) / (A_IN - A_OUT);
+      p.currentTime = progress * p.duration;
+      if (p.paused) {
+        vinyl.resume();
+        setSpin(true);
+        document.getElementById('playBtn').textContent = '⏸ 暂停';
+        document.getElementById('led').classList.add('on');
+      }
+    }
+  } else {
+    armAt(A_REST);
+  }
+});
+
+/* ============ 唱臂随进度自动移动 ============ */
 document.getElementById('player').addEventListener('timeupdate', () => {
+  if (armDragging) return;
   const p = document.getElementById('player');
   const dur = p.duration || 0;
   if (!dur || p.paused) return;

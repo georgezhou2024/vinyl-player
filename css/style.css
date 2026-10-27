@@ -6,7 +6,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;
-  background:radial-gradient(900px 600px at 30% 0%,#161d26,#080b10 60%);
+  background:radial-gradient(900px 600px at 50% 0%,#161d26,#080b10 60%);
   color:#e8eef5;min-height:100vh;
 }
 .app{display:grid;grid-template-columns:1fr 320px;gap:24px;padding:20px;max-width:1200px;margin:auto}
@@ -18,11 +18,12 @@ body{
   padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px}
 .ghost:hover{background:rgba(255,255,255,.16)}
 
-/* ---------- 机器 ---------- */
+.deck{display:flex;justify-content:center;align-items:flex-start}
 .machine{
   border-radius:18px;overflow:hidden;
   background:linear-gradient(180deg,var(--wood),var(--wood2));
   box-shadow:0 30px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06);
+  width:100%;max-width:680px;
 }
 .deck-top{position:relative;
   background:
@@ -41,7 +42,8 @@ body{
 .label-text{font-size:13px;fill:#2a1c0e;text-anchor:middle;font-weight:700}
 .label-side{font-size:9px;fill:#5b3f22;text-anchor:middle}
 .spindle{fill:#e6e9ec;stroke:#7c848c;stroke-width:1.5}
-.pivot{fill:#c9d2da}.pivot-h{fill:#0d1116}
+.pivot{fill:#c9d2da;cursor:grab}
+.pivot-h{fill:#0d1116;pointer-events:none}
 .post{fill:#2b2f35}
 
 #disc{animation:spin var(--spin,1.8s) linear infinite;animation-play-state:paused}
@@ -69,7 +71,6 @@ body{
 .meter{grid-column:1/-1}
 #scope{width:100%;height:46px;background:#10151b;border-radius:8px}
 
-/* ---------- 唱片架 ---------- */
 .library{display:flex;flex-direction:column;gap:14px}
 .drop{border:2px dashed rgba(255,255,255,.22);border-radius:12px;padding:16px;
   font-size:12px;line-height:1.6;background:rgba(255,255,255,.04)}
