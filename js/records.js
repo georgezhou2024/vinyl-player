@@ -3,10 +3,15 @@ const Library = {
 
   open() {
     return new Promise((res, rej) => {
-      const d = indexedDB.open('vinyl-db', 1);
-      d.onupgradeneeded = () => d.createObjectStore('tracks', { keyPath: 'id' });
-      d.onsuccess = () => { this.db = d.result; res(d.result); };
-      d.onerror = e => rej(e);
+      const req = indexedDB.open('vinyl-db', 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('tracks')) {
+          db.createObjectStore('tracks', { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = () => { this.db = req.result; res(req.result); };
+      req.onerror = (e) => { console.error('IndexedDB error:', e); rej(e); };
     });
   },
 
@@ -16,6 +21,7 @@ const Library = {
     await new Promise((res, rej) => {
       const tx = this.db.transaction('tracks', 'readwrite');
       tx.objectStore('tracks').put(rec).onsuccess = res;
+      tx.onerror = rej;
     });
     return rec;
   },
