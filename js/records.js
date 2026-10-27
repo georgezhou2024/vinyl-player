@@ -3,15 +3,17 @@ const Library = {
 
   open() {
     return new Promise((res, rej) => {
-      const req = indexedDB.open('vinyl-db', 1);
+      const req = indexedDB.open('vinyl-db', 2);
       req.onupgradeneeded = (e) => {
         const db = e.target.result;
-        if (!db.objectStoreNames.contains('tracks')) {
-          db.createObjectStore('tracks', { keyPath: 'id' });
+        if (db.objectStoreNames.contains('tracks')) {
+          db.deleteObjectStore('tracks');
         }
+        db.createObjectStore('tracks', { keyPath: 'id' });
       };
       req.onsuccess = () => { this.db = req.result; res(req.result); };
       req.onerror = (e) => { console.error('IndexedDB error:', e); rej(e); };
+      req.onblocked = () => console.warn('IndexedDB blocked');
     });
   },
 
